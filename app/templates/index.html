@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+        <link href='//fonts.googleapis.com/css?family=Droid Sans Mono' rel='stylesheet'>
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">
+        <script type="text/javascript" src="{{ url_for('static', filename='site.js') }}"></script>
+    </head>
+
+    <body>
+        <div class="container-fluid">
+            <div class="row" style="padding-top: 15px;">
+                <div class="col-lg-8">
+                    <table id="risk-in-droid-table"></table>
+                </div>
+                <div class="visible-xs visible-sm visible-md" style="height: 15px;"></div>
+                <div id="details-container" class="col-lg-4" style="padding-left: 0; display: none;">
+                    <div class="visible-xs visible-sm visible-md" style="float: left; margin: 7.5px;"></div>
+                    <div style="overflow: hidden;">
+                        <div id="details-title" class="details details-row" style="text-align: center;"></div>
+                        <div>
+                            <div id="details-hash" class="details details-row" style="float: left; border-right: 0;"></div>
+                            <div id="details-source" class="details details-row" style="text-align: center;"></div>
+                        </div>
+                        <div style="position: relative;">
+                            <div class="risk-progress">
+                                <div class="risk-progress-bar"></div>
+                            </div>
+                            <div class="progress-risk-value details"></div>
+                        </div>
+                        <table id="risk-in-droid-details"></table>
+                        <div style="margin-bottom: 15px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            // Load the tables when the page is ready.
+            $(document).ready(function() {
+                $("#risk-in-droid-table").tabulator({
+                    height: $(window).height() - 30,
+                    minHeight: 500,
+                    sortBy: "md5",
+                    sortDir: "asc",
+                    pagination: "remote",
+                    colMinWidth: 100,
+                    fitColumns: true,
+                    colResizable: false,
+                    index: "md5",
+                    columns:[
+                        { title: "Name", field: "name", sortable: true, sorter: "string", align: "center",
+                            headerFilter: function() { return headerFilter("name-filter"); }},
+                        { title: "MD5", field: "md5", sortable: true, sorter: "alphanum", align: "center", width: 330,
+                            headerFilter: function() { return headerFilter("md5-filter"); }},
+                        { title: "Risk", field: "risk", sortable: true, sorter: "number", align: "center", width: 120,
+                            headerFilter: function() { return headerFilter("risk-filter"); }}
+                    ],
+                    ajaxURL: "{{ url_for('get_apks') }}",
+                    ajaxParams: { namefil: $("#name-filter").val(), md5fil: $("#md5-filter").val(), riskfil: $("#risk-filter").val() },
+                    paginationDataSent: { "size": "per_page" },
+                    rowClick: function(e, id) { appDetails(id); },
+                    tableLoaded: function() {
+                        if (window.mainTableLoaded) {
+                            return;
+                        }
+                        window.mainTableLoaded = true;
+
+                        var rowNumber = Math.ceil($("#risk-in-droid-table").tabulator("getTableHeight") / 29);
+                        $("#risk-in-droid-table").tabulator("setPageSize", rowNumber);
+
+                        $("#risk-in-droid-table").tabulator("setPage", 1);
+                    }
+                });
+
+                $("#risk-in-droid-details").tabulator({
+                    height: $(window).height() - 162,
+                    minHeight: 368,
+                    colMinWidth: 100,
+                    fitColumns: true,
+                    colResizable: false,
+                    groupBy: "cat",
+                    columns:[
+                        { title: "Permissions", field: "name", sortable: true, sorter: "string", align: "center" }
+                    ],
+                    rowClick: function(e, id, data, row) {
+                        // Row clicked
+                    }
+                });
+            });
+
+            // Resize the tables when the browser's window is resized.
+            $(window).resize(function(){
+                $("#risk-in-droid-table").tabulator("redrawUpdateHeight", 15);
+                $("#risk-in-droid-details").tabulator("redrawUpdateHeight", 147);
+            });
+
+            function debounce(func, wait, immediate) {
+                var timeout;
+                return function() {
+                    var context = this, args = arguments;
+                    var later = function() {
+                        timeout = null;
+                        if (!immediate) {
+                            func.apply(context, args);
+                        }
+                    };
+                    var callNow = immediate && !timeout;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait || 200);
+                    if (callNow) {
+                        func.apply(context, args);
+                    }
+                }
+            }
+
+            function headerFilter(filterName) {
+                var editor = $("<input id='" + filterName + "' type='text' placeholder='Filter'>");
+                editor.addClass("tabulator-custom-filter");
+
+                var lastVal = "";
+
+                editor.on("input propertychange paste", debounce(function(e) {
+                    e.stopPropagation();
+                    if (lastVal !== $(this).val()) {
+                        lastVal = $(this).val();
+                        filterData();
+                    }
+                }, 1000));
+
+                return editor;
+            }
+
+            function filterData() {
+                $("#risk-in-droid-table").tabulator("setData", "{{ url_for('get_apks') }}", {
+                    namefil: $("#name-filter").val(),
+                    md5fil: $("#md5-filter").val(),
+                    riskfil: $("#risk-filter").val()
+                });
+            }
+
+            function appDetails(md5) {
+                $.ajax({
+                    url: "{{ url_for('get_app_details') }}",
+                    type: "GET",
+                    cache: false,
+                    data: { md5: md5 },
+                    async: true,
+                    dataType: "json",
+                    success: function(data) {
+                        $("#details-title").html(data.name);
+                        $("#details-hash").html(data.md5);
+                        $("#details-source").html(data.source);
+                        $("#risk-in-droid-details").tabulator("setData", data.permissions);
+                        $("#details-container").show("fast", function() {
+                            $("#risk-in-droid-details").tabulator("redraw");
+                        });
+
+                        clearTimeout(window.textColorTimeout);
+
+                        var red = 0;
+                        var green = 255;
+
+                        if (data.risk > 50) {
+                            // Decrease only the green color in order to obtain red.
+                            green = Math.round(255 * ((100 - data.risk) / 50));
+                            red = 255;
+                        }
+                        else {
+                            // Increase only the red color in order to obtain yellow.
+                            red = Math.round(255 * (data.risk / 50));
+                        }
+
+                        if (data.risk > 75) {
+                            window.textColorTimeout = setTimeout(function () {
+                                $(".progress-risk-value").css("color", "#fdf6e3")
+                            }, 1000);
+                        }
+                        else {
+                            window.textColorTimeout = setTimeout(function () {
+                                $(".progress-risk-value").css("color", "#657b83")
+                            }, 1000);
+                        }
+
+                        $(".risk-progress > .risk-progress-bar").css({
+                            "width": data.risk + "%",
+                            "background-color": "rgb(" + red + ", " + green + ", 0)"
+                        });
+
+                        $('.progress-risk-value').html(data.risk);
+                    },
+                    error: function() {
+                        alert("Error when loading the app details. Please retry.");
+                    }
+                });
+            }
+        </script>
+    </body>
+</html>

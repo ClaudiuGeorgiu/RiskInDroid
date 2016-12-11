@@ -212,6 +212,7 @@ body {
   white-space: nowrap;
   overflow-x: hidden;
   overflow-y: auto;
+  -ms-overflow-x: hidden;
   -ms-overflow-y: auto;
 }
 .tabulator .tabulator-tableHolder .tabulator-table {

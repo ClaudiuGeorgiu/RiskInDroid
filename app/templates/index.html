@@ -12,6 +12,7 @@
 
         <link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">
         <script type="text/javascript" src="{{ url_for('static', filename='site.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='jquery.slimscroll.js') }}"></script>
     </head>
 
     <body>
@@ -74,10 +75,24 @@
                         }
                         window.mainTableLoaded = true;
 
-                        var rowNumber = Math.ceil($("#risk-in-droid-table").tabulator("getTableHeight") / 29);
-                        $("#risk-in-droid-table").tabulator("setPageSize", rowNumber);
+                        var riskTable = $("#risk-in-droid-table");
+                        var riskTableHolder = riskTable.find(".tabulator-tableHolder");
 
-                        $("#risk-in-droid-table").tabulator("setPage", 1);
+                        var rowNumber = Math.ceil(riskTable.tabulator("getTableHeight") / 29);
+                        riskTable.tabulator("setPageSize", rowNumber);
+
+                        var additionalHeight = riskTable.tabulator("getHeaderHeight") + riskTable.tabulator("getFooterHeight");
+
+                        riskTableHolder.slimScroll({
+                            height: "calc(100% - " + additionalHeight + "px)",
+                            allowPageScroll: true,
+                            color: "#b58900",
+                            opacity: .3
+                        });
+
+                        riskTableHolder.css("height", "100%");
+
+                        riskTable.tabulator("setPage", 1);
                     }
                 });
 
@@ -91,6 +106,23 @@
                     columns:[
                         { title: "Permissions", field: "name", sortable: true, sorter: "string", align: "center" }
                     ],
+                    tableLoaded: function() {
+                        if (window.detailsTableLoaded) {
+                            return;
+                        }
+                        window.detailsTableLoaded = true;
+
+                        var riskTableHolder = $("#risk-in-droid-details").find(".tabulator-tableHolder");
+
+                        riskTableHolder.slimScroll({
+                            height: "calc(100% - " + 41 + "px)",
+                            allowPageScroll: true,
+                            color: "#b58900",
+                            opacity: .3
+                        });
+
+                        riskTableHolder.css("height", "100%");
+                    },
                     rowClick: function(e, id, data, row) {
                         // Row clicked
                     }

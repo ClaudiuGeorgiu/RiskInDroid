@@ -1575,10 +1575,20 @@
             }
         },
 
-        //set page size for the table
+        //get table height
         getTableHeight: function () {
             var self = this;
             return self.tableHolder.innerHeight();
+        },
+
+        getFooterHeight: function() {
+            var self = this;
+            return self.footer.outerHeight();
+        },
+
+        getHeaderHeight: function() {
+            var self = this;
+            return self.header.outerHeight();
         },
 
         //create page selector layout for current page
@@ -1927,7 +1937,7 @@
         //show loader blockout div
         _showLoader: function (self, msg) {
             if (self.options.showLoader) {
-                $(".tabulator-loader-msg", self.loaderDiv).attr("role", "alert")
+                $(".tabulator-loader-msg", self.loaderDiv).attr("role", "alert");
                 $(".tabulator-loader-msg", self.loaderDiv).empty().append(msg);
                 $(".tabulator-loader-msg", self.loaderDiv).css({"margin-top": (self.element.innerHeight() / 2) - ($(".tabulator-loader-msg", self.loaderDiv).outerHeight() / 2)});
                 self.element.append(self.loaderDiv);
@@ -1985,12 +1995,12 @@
                 var cols = $(".tabulator-col:not(.tabulator-col-group)", self.header);
 
                 //resize header elements
-                cols.css({"padding-top": ""})
+                cols.css({"padding-top": ""});
                 subheadings.css({"height": ""});
                 $(">.tabulator-col, >.tabulator-col-row-handle", self.header).css({"height": ""}).css({"height": self.header.innerHeight() + "px"});
                 subheadings.each(function () {
                     $(this).css({"height": $(this).parent().innerHeight()})
-                })
+                });
 
                 //vertical align column headers
                 if (self.options.colVertAlign !== "top") {
@@ -2006,7 +2016,8 @@
                 if (self.options.height && headerHeight != self.header.outerHeight()) {
                     self.tableHolder.css({
                         "min-height": "calc(100% - " + self.header.outerHeight() + "px)",
-                        "max-height": "calc(100% - " + self.header.outerHeight() + "px)",
+                        // "max-height": "calc(100% - " + self.header.outerHeight() + "px)"
+                        "max-height": "100%"
                     });
                 }
             }
@@ -2016,13 +2027,13 @@
                 self.table.css({
                     "min-width": self.header[0].scrollWidth + "px",
                     "min-height": "1px",
-                    "visibility": "hidden",
+                    "visibility": "hidden"
                 });
             } else {
                 self.table.css({
                     "min-width": "",
                     "min-height": "",
-                    "visibility": "",
+                    "visibility": ""
                 });
             }
 
@@ -2121,13 +2132,15 @@
 
                 self.tableHolder.css({
                     "min-height": "calc(100% - " + footerHeight + "px)",
-                    "max-height": "calc(100% - " + footerHeight + "px)"
+                    // "max-height": "calc(100% - " + footerHeight + "px)"
+                    "max-height": "100%"
                 });
             } else {
                 if (self.options.height) {
                     self.tableHolder.css({
                         "min-height": "calc(100% - " + self.header.outerHeight() + "px)",
-                        "max-height": "calc(100% - " + self.header.outerHeight() + "px)"
+                        // "max-height": "calc(100% - " + self.header.outerHeight() + "px)"
+                        "max-height": "100%"
                     });
                 }
             }

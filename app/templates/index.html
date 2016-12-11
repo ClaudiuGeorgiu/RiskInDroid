@@ -86,8 +86,8 @@
                         riskTableHolder.slimScroll({
                             height: "calc(100% - " + additionalHeight + "px)",
                             allowPageScroll: true,
-                            color: "#b58900",
-                            opacity: .3
+                            color: "#2980b9",
+                            opacity: .5
                         });
 
                         riskTableHolder.css("height", "100%");
@@ -117,8 +117,8 @@
                         riskTableHolder.slimScroll({
                             height: "calc(100% - " + 41 + "px)",
                             allowPageScroll: true,
-                            color: "#b58900",
-                            opacity: .3
+                            color: "#2980b9",
+                            opacity: .5
                         });
 
                         riskTableHolder.css("height", "100%");
@@ -213,7 +213,7 @@
 
                         if (data.risk > 75) {
                             window.textColorTimeout = setTimeout(function () {
-                                $(".progress-risk-value").css("color", "#fdf6e3")
+                                $(".progress-risk-value").css("color", "#f6f6f6")
                             }, 1000);
                         }
                         else {
@@ -227,7 +227,7 @@
                             "background-color": "rgb(" + red + ", " + green + ", 0)"
                         });
 
-                        $('.progress-risk-value').html(data.risk);
+                        $('.progress-risk-value').html(data.risk + " / 100");
                     },
                     error: function() {
                         alert("Error when loading the app details. Please retry.");

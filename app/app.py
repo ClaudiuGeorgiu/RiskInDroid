@@ -170,4 +170,4 @@ def get_app_details():
 
 if __name__ == '__main__':
     setup_app()
-    app.run(debug=True)
+    app.run()

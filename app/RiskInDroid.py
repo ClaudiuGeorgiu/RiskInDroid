@@ -190,7 +190,11 @@ class RiskInDroid(object):
                        LogisticRegression(random_state=self.seed))
 
     def get_feature_vector(self, apk: Apk):
-
+        """
+        Get the feature vector composed by 0s and 1s for a specified apk.
+        :param apk: The apk for which to get the feature vector.
+        :return: A feature vector composed by 0s and 1s.
+        """
         _vector = {}
 
         # Create a new "row" for each category of permissions, where the columns
@@ -219,6 +223,10 @@ class RiskInDroid(object):
         return _vector
 
     def get_training_apks(self):
+        """
+        Get the list of apks used to train RiskInDroid.
+        :return: A list of apks and their labels (malware or goodware).
+        """
 
         # Get the entire list of apps belonging to the Malware Collection and to the
         # Google Play Store collection.
@@ -248,6 +256,10 @@ class RiskInDroid(object):
         return _apks, _targets
 
     def get_training_apks_3_sets(self):
+        """
+        Get 3 sets of training apks, used to test the classifiers' performances.
+        :return: 3 lists of apks and their labels (malware or goodware).
+        """
 
         # Get the entire list of apps belonging to the Malware Collection and to the
         # Google Play Store collection.
@@ -282,6 +294,10 @@ class RiskInDroid(object):
         return (_apks_1, _targets), (_apks_2, _targets), (_apks_3, _targets)
 
     def get_training_vectors(self):
+        """
+        Get the training vectors for the apks in the main training set.
+        :return: A list of feature vectors and their labels (malware or goodware).
+        """
 
         _apks, _targets = self.get_training_apks()
 
@@ -304,6 +320,10 @@ class RiskInDroid(object):
         return _vectors, _targets
 
     def get_training_vectors_3_sets(self):
+        """
+        Get the training vectors for the apks in the 3 training sets.
+        :return: 3 lists of feature vectors and their labels (malware or goodware).
+        """
 
         _sets = self.get_training_apks_3_sets()
 
@@ -331,6 +351,10 @@ class RiskInDroid(object):
         return ((v, v['target']) for v in _vector_sets)
 
     def train_classifiers(self):
+        """
+        Train the classifiers used in RiskInDroid.
+        :return: A list with the trained models.
+        """
 
         _vectors, _targets = self.get_training_vectors()
 
@@ -345,6 +369,11 @@ class RiskInDroid(object):
         return self.trained_models
 
     def calculate_risk(self, feature_vector: dict):
+        """
+        Calculate the RiskInDroid risk for a specified feature vector.
+        :param feature_vector: The feature vector for which to calculate the risk.
+        :return: A risk value between 0 and 100.
+        """
 
         # Get the desired category from the feature vector for the app under test.
         _test_app = feature_vector['allTypes']
@@ -372,12 +401,18 @@ class RiskInDroid(object):
 
         # Rescale the risk value in order to avoid probabilities too close to 0 and 1.
         _risk_value = 100 * _mean_proba.mean()
+
         # noinspection PyUnresolvedReferences
         _rescaled_risk = (50 / numpy.log(101)) * (numpy.log(_risk_value + 1) - numpy.log(101 - _risk_value)) + 50
 
         return _rescaled_risk
 
     def performance_analysis(self):
+        """
+        Analyze and print to stdout the performances of a big list of classifiers, in order
+        to include only the best ones in the final version of RiskInDroid.
+        :return: None.
+        """
 
         # Category of permissions for which to calculate the performances.
         _cat = 'declared'
@@ -387,6 +422,8 @@ class RiskInDroid(object):
 
         _k_fold = StratifiedKFold(n_splits=10, shuffle=True, random_state=self.seed)
 
+        # The original list of classifiers taken into consideration, before selecting
+        # only the best ones for RiskInDroid.
         _all_models = (SVC(kernel='linear', probability=True, random_state=self.seed),
                        GaussianNB(),
                        MultinomialNB(),
@@ -406,7 +443,7 @@ class RiskInDroid(object):
         _training_sets = list(self.get_training_vectors_3_sets())
 
         for model in _all_models:
-            # print('\n\n\nAnalysis of ' + model.__class__.__name__ + ':')
+            print('\n\n\nAnalysis of ' + model.__class__.__name__ + ':')
 
             # Goodware and malware scores for the current model.
             _malware_scores = numpy.array([])
@@ -414,9 +451,6 @@ class RiskInDroid(object):
 
             # Correctly predicted targets for the current model.
             _ok_targets = numpy.array([])
-
-            print('\n' + r'\multirow{4}{*}{\rotatebox{90}{\parbox{3cm}{\centering \textit{' +
-                  model.__class__.__name__ + r'}}\hspace{-.01\normalbaselineskip}}}')
 
             # We analyze the 3 training sets for each model.
             for (index, current_set) in enumerate(_training_sets):
@@ -473,32 +507,20 @@ class RiskInDroid(object):
 
                     _loc_ok_targets = numpy.append(_loc_ok_targets, _fold_ok_targets / len(test_index))
 
-                # print('    set_{0}:'.format(index + 1))
-                # print('        accuracy: {0:.2f}'.format(_loc_ok_targets.mean() * 100))
-                # print('        malware mean: {0:.2f}'.format(_loc_m_scores.mean() * 100))
-                # print('        malware std_dev: {0:.2f}'.format(_loc_m_scores.std() * 100))
-                # print('        goodware mean: {0:.2f}'.format(_loc_g_scores.mean() * 100))
-                # print('        goodware std_dev: {0:.2f}'.format(_loc_g_scores.std() * 100))
-
-                print(r'& Set~$' + str(index + 1) + r'$ & $' + '{0:.2f}'.format(_loc_ok_targets.mean() * 100) +
-                      r'$ & $' + '{0:.2f}'.format(_loc_m_scores.mean() * 100) + r'$ & $' +
-                      '{0:.2f}'.format(_loc_m_scores.std() * 100) + r'$ & $' +
-                      '{0:.2f}'.format(_loc_g_scores.mean() * 100) + r'$ & $' +
-                      '{0:.2f}'.format(_loc_g_scores.std() * 100) + r'$ \\\cline{2-7}')
+                print('    set_{0}:'.format(index + 1))
+                print('        accuracy: {0:.2f}'.format(_loc_ok_targets.mean() * 100))
+                print('        malware mean: {0:.2f}'.format(_loc_m_scores.mean() * 100))
+                print('        malware std_dev: {0:.2f}'.format(_loc_m_scores.std() * 100))
+                print('        goodware mean: {0:.2f}'.format(_loc_g_scores.mean() * 100))
+                print('        goodware std_dev: {0:.2f}'.format(_loc_g_scores.std() * 100))
 
                 _ok_targets = numpy.append(_ok_targets, _loc_ok_targets)
                 _malware_scores = numpy.append(_malware_scores, _loc_m_scores)
                 _goodware_scores = numpy.append(_goodware_scores, _loc_g_scores)
 
-            # print('    total:')
-            # print('        accuracy: {0:.2f}'.format(_ok_targets.mean() * 100))
-            # print('        malware mean: {0:.2f}'.format(_malware_scores.mean() * 100))
-            # print('        malware std_dev: {0:.2f}'.format(_malware_scores.std() * 100))
-            # print('        goodware mean: {0:.2f}'.format(_goodware_scores.mean() * 100))
-            # print('        goodware std_dev: {0:.2f}'.format(_goodware_scores.std() * 100))
-
-            print(r'& Mean & $' + '{0:.2f}'.format(_ok_targets.mean() * 100) +
-                  r'$ & $' + '{0:.2f}'.format(_malware_scores.mean() * 100) + r'$ & $' +
-                  '{0:.2f}'.format(_malware_scores.std() * 100) + r'$ & $' +
-                  '{0:.2f}'.format(_goodware_scores.mean() * 100) + r'$ & $' +
-                  '{0:.2f}'.format(_goodware_scores.std() * 100) + r'$ \\\cline{2-7}')
+            print('    total:')
+            print('        accuracy: {0:.2f}'.format(_ok_targets.mean() * 100))
+            print('        malware mean: {0:.2f}'.format(_malware_scores.mean() * 100))
+            print('        malware std_dev: {0:.2f}'.format(_malware_scores.std() * 100))
+            print('        goodware mean: {0:.2f}'.format(_goodware_scores.mean() * 100))
+            print('        goodware std_dev: {0:.2f}'.format(_goodware_scores.std() * 100))

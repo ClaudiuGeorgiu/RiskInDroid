@@ -1,44 +1,126 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import hashlib
 import os
 import subprocess
+import time
 
 from flask import Flask
 from flask import jsonify
 from flask import make_response
+from flask import redirect
 from flask import render_template
 from flask import request
+from flask import url_for
 from sqlalchemy import cast
 from sqlalchemy.sql import text
+from werkzeug.utils import secure_filename
 
 from RiskInDroid import RiskInDroid
 from model import db, Apk
 
 
-app = Flask(__name__)
-
-app.config['DB_DIRECTORY'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'database')
-app.config['DB_7Z_PATH'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'database', 'permission_db.7z')
-app.config['DB_PATH'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'database', 'permission_db.db')
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + app.config['DB_PATH']
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+ALLOWED_EXTENSIONS = {'apk', 'zip'}
 
 
-def setup_app():
+def create_app():
+
+    app = Flask(__name__)
+
+    app.config['UPLOAD_DIR'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'upload')
+    app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
+
+    app.config['DB_DIRECTORY'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'database')
+    app.config['DB_7Z_PATH'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'database', 'permission_db.7z')
+    app.config['DB_PATH'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'database', 'permission_db.db')
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + app.config['DB_PATH']
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # Establish the database connection.
+    db.init_app(app)
+
+    # Create the upload directory (if not already existing).
+    if not os.path.exists(app.config['UPLOAD_DIR']):
+        os.makedirs(app.config['UPLOAD_DIR'])
+
     # Check if the database file is already extracted from the archive, otherwise extract it.
     if not os.path.isfile(app.config['DB_PATH']):
         instruction = '7z x "{0}" -o"{1}"'.format(app.config['DB_7Z_PATH'], app.config['DB_DIRECTORY'])
-        subprocess.run(instruction)
+        subprocess.run(instruction, shell=True)
+
+    return app
 
 
-@app.route('/', methods=['GET'])
+application = create_app()
+
+
+@application.route('/', methods=['GET'], strict_slashes=False)
 def home():
     return render_template('index.html')
 
 
-@app.route('/apks', methods=['GET'])
+@application.route('/results', methods=['GET'], strict_slashes=False)
+def results():
+    return render_template('results.html')
+
+
+@application.route('/upload', methods=['POST'], strict_slashes=False)
+def upload_apk():
+
+    if request.method == 'POST':
+
+        # The POST request must contain a file.
+        if 'file' not in request.files:
+            return redirect(url_for('home'))
+
+        file = request.files['file']
+
+        # The POST request must contain a valid file.
+        if not file.filename.strip():
+            return redirect(url_for('home'))
+
+        if file and check_if_valid_file_name(file.filename):
+
+            filename = secure_filename(file.filename)
+
+            file_path = os.path.join(application.config['UPLOAD_DIR'],
+                                     '{0}_{1}'.format(time.strftime("%H-%M-%S_%d-%m-%Y"), filename))
+            file.save(file_path)
+
+            rid = RiskInDroid()
+
+            permissions = rid.get_permission_json(file_path)
+
+            try:
+
+                response = {
+                    'name': filename,
+                    'md5': md5sum(file_path),
+                    'risk': round(rid.calculate_risk(rid.get_feature_vector_from_json(permissions)), 3),
+                    'permissions':
+                        [val for val in
+                         list(map(lambda x: {'cat': 'Declared', 'name': x},
+                                  permissions['declared'])) +
+                         list(map(lambda x: {'cat': 'Required and Used', 'name': x},
+                                  permissions['requiredAndUsed'])) +
+                         list(map(lambda x: {'cat': 'Required but Not Used', 'name': x},
+                                  permissions['requiredButNotUsed'])) +
+                         list(map(lambda x: {'cat': 'Not Required but Used', 'name': x},
+                                  permissions['notRequiredButUsed']))]
+                }
+
+            except:
+                return 'The uploaded file is not valid', 400
+
+            return render_template('details.html', apk=response)
+
+    # If this is not a POST request.
+    return redirect(url_for('home'))
+
+
+@application.route('/apks', methods=['GET'], strict_slashes=False)
 def get_apks():
 
     query = Apk.query
@@ -78,8 +160,8 @@ def get_apks():
     return make_response(jsonify(response))
 
 
-@app.route('/details', methods=['GET'])
-def get_app_details():
+@application.route('/details', methods=['GET'], strict_slashes=False)
+def get_apk_details():
 
     md5 = request.args.get('md5')
 
@@ -106,16 +188,17 @@ def get_app_details():
     return make_response(jsonify(response))
 
 
-@app.route('/rid', methods=['GET'])
-def risk_in_droid():
-    rid = RiskInDroid()
+def md5sum(file_path, block_size=65536):
+    md5_hash = hashlib.md5()
+    with open(file_path, 'rb') as filename:
+        for chunk in iter(lambda: filename.read(block_size), b''):
+            md5_hash.update(chunk)
+    return md5_hash.hexdigest()
 
-    rid.performance_analysis()
 
-    return 'OK', 200
+def check_if_valid_file_name(file_name):
+    return '.' in file_name and file_name.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 if __name__ == '__main__':
-    db.init_app(app)
-    setup_app()
-    app.run()
+    application.run()

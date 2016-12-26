@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import json
+import os
 import random
+from subprocess import run, PIPE
 
 import numpy
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.externals import joblib
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.linear_model import SGDClassifier
@@ -175,7 +179,14 @@ class RiskInDroid(object):
                         'notRequiredButUsed',
                         'allTypes')
 
-    def __init__(self):
+    # Default directory where to save the trained models.
+    SAVED_MODELS_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'models')
+
+    def __init__(self, saved_models_dir: str = SAVED_MODELS_DIR):
+        """
+        RiskInDroid constructor.
+        :param saved_models_dir: The directory where to save the trained models.
+        """
 
         # Random seed.
         self.seed = 42
@@ -189,12 +200,89 @@ class RiskInDroid(object):
                        GradientBoostingClassifier(random_state=self.seed),
                        LogisticRegression(random_state=self.seed))
 
-    def get_feature_vector(self, apk: Apk):
+        # If not already existing, create the directory where to save the trained models.
+        if saved_models_dir:
+            if not os.path.exists(saved_models_dir):
+                os.makedirs(saved_models_dir)
+        self.saved_models_dir = saved_models_dir
+
+        # If the models are already trained and saved into a directory, load them from that directory.
+        _already_trained = True
+        for model in self.MODELS:
+            _model_name = model.__class__.__name__ + '_model.pkl'
+            if not os.path.isfile(os.path.join(self.saved_models_dir, _model_name)):
+                _already_trained = False
+                break
+
+        if _already_trained:
+            for model in self.MODELS:
+                _model_name = model.__class__.__name__ + '_model.pkl'
+                self.trained_models.append(joblib.load(os.path.join(self.saved_models_dir, _model_name)))
+
+    # noinspection PyMethodMayBeStatic
+    def get_permission_json(self, file_path: str):
+        """
+        Extract a json with the permissions of an application (.apk or .zip).
+        :param file_path: The path of the application for which to extract the permission json.
+        :return: The json with the permissions of the application, None if an error occurred.
+        """
+
+        if not os.path.exists(file_path):
+            print('{0} does not exist.'.format(file_path))
+            return None
+
+        if not os.path.exists(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'PermissionChecker.jar')):
+            print('Please make sure that PermissionChecker.jar is in the same directory as this script.')
+            return None
+
+        # Get the output from the permission checker.
+        instruction = 'java -jar "{0}" "{1}"'.format(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                                                  'PermissionChecker.jar'), file_path)
+        result = run(instruction, stdout=PIPE, stderr=PIPE, universal_newlines=True, shell=True).stdout
+
+        # Continue only if the output from the permission checker is not null.
+        if result.strip():
+            # Return the output from the permission checker as JSON.
+            return json.loads(result)
+        else:
+            return None
+
+    def get_feature_vector_from_json(self, json_result: dict):
+        """
+        Get the feature vector composed by 0s and 1s for a specified json.
+        :param json_result: The json for which to get the feature vector.
+        :return: A feature vector composed by 0s and 1s.
+        """
+
+        if json_result:
+
+            _vector = {}
+
+            # Create a new "row" for each category of permissions, where the columns
+            # will be the permissions' names contained in ANDROID_PERMISSIONS.
+            for permission_type in self.PERMISSION_TYPES:
+                _vector[permission_type] = []
+
+            for permission_type in self.PERMISSION_TYPES[:-1]:
+                for permission in self.ANDROID_PERMISSIONS:
+
+                    # Insert 1 every time the app contains a certain permission, insert 0 otherwise.
+                    if permission in json_result[permission_type]:
+                        _vector[permission_type].append(1)
+                        _vector['allTypes'].append(1)
+                    else:
+                        _vector[permission_type].append(0)
+                        _vector['allTypes'].append(0)
+
+            return _vector
+
+    def get_feature_vector_from_apk(self, apk: Apk):
         """
         Get the feature vector composed by 0s and 1s for a specified apk.
         :param apk: The apk for which to get the feature vector.
         :return: A feature vector composed by 0s and 1s.
         """
+
         _vector = {}
 
         # Create a new "row" for each category of permissions, where the columns
@@ -310,7 +398,7 @@ class RiskInDroid(object):
 
         for apk in tqdm(_apks, dynamic_ncols=True, desc='Extracting feature vectors',
                         bar_format='{l_bar}{bar}|[{elapsed}<{remaining}]'):
-            _vector = self.get_feature_vector(apk)
+            _vector = self.get_feature_vector_from_apk(apk)
 
             for permission_type in self.PERMISSION_TYPES:
                 _vectors[permission_type].append(_vector[permission_type])
@@ -339,7 +427,7 @@ class RiskInDroid(object):
 
             for apk in tqdm(s[0], dynamic_ncols=True, desc='Extracting feature vectors (set {0})'.format(idx + 1),
                             bar_format='{l_bar}{bar}|[{elapsed}<{remaining}]'):
-                _vector = self.get_feature_vector(apk)
+                _vector = self.get_feature_vector_from_apk(apk)
 
                 for permission_type in self.PERMISSION_TYPES:
                     _vectors[permission_type].append(_vector[permission_type])
@@ -363,17 +451,40 @@ class RiskInDroid(object):
         # Train all the selected classifiers.
         for model in tqdm(self.MODELS, dynamic_ncols=True, desc='Training classifiers',
                           bar_format='{l_bar}{bar}|[{elapsed}<{remaining}]'):
+
             model.fit(_vectors['allTypes'], _targets)
             self.trained_models.append(model)
 
+            _model_name = model.__class__.__name__ + '_model.pkl'
+
+            if self.saved_models_dir:
+                joblib.dump(model, os.path.join(self.saved_models_dir, _model_name))
+
         return self.trained_models
+
+    # noinspection PyMethodMayBeStatic
+    def rescale_risk(self, original_risk: float):
+        """
+        Rescale the risk value in order to avoid probabilities too close to 0 and 1. The new risk
+        value will be in a range between 0 and 100.
+        :param original_risk: The original risk value between 0 and 1.
+        :return: The rescaled risk value between 0 and 100.
+        """
+
+        _risk_value = original_risk * 100
+
+        # noinspection PyUnresolvedReferences
+        return (50 / numpy.log(101)) * (numpy.log(_risk_value + 1) - numpy.log(101 - _risk_value)) + 50
 
     def calculate_risk(self, feature_vector: dict):
         """
         Calculate the RiskInDroid risk for a specified feature vector.
         :param feature_vector: The feature vector for which to calculate the risk.
-        :return: A risk value between 0 and 100.
+        :return: A risk value between 0 and 100, None if an error occurred.
         """
+
+        if not feature_vector:
+            return None
 
         # Get the desired category from the feature vector for the app under test.
         _test_app = feature_vector['allTypes']
@@ -392,7 +503,7 @@ class RiskInDroid(object):
 
             # The risk score is given by the probability associated
             # with "malware" class output from the classifiers.
-            if proba[0][0] == 'malware':
+            if proba[0][0] == b'malware':
                 _score = proba[0]
             else:
                 _score = proba[1]
@@ -400,12 +511,9 @@ class RiskInDroid(object):
             _mean_proba = numpy.append(_mean_proba, _score[1])
 
         # Rescale the risk value in order to avoid probabilities too close to 0 and 1.
-        _risk_value = 100 * _mean_proba.mean()
+        _risk_value = self.rescale_risk(_mean_proba.mean())
 
-        # noinspection PyUnresolvedReferences
-        _rescaled_risk = (50 / numpy.log(101)) * (numpy.log(_risk_value + 1) - numpy.log(101 - _risk_value)) + 50
-
-        return _rescaled_risk
+        return _risk_value
 
     def performance_analysis(self):
         """
@@ -416,9 +524,6 @@ class RiskInDroid(object):
 
         # Category of permissions for which to calculate the performances.
         _cat = 'declared'
-
-        # Set the seed for reproducibility purposes.
-        random.seed(self.seed)
 
         _k_fold = StratifiedKFold(n_splits=10, shuffle=True, random_state=self.seed)
 
@@ -482,7 +587,7 @@ class RiskInDroid(object):
                                          model.predict_proba([_train_data[loc_index]])[0]))
 
                         # The malware probability is considered as the risk value.
-                        if proba[0][0] == 'malware':
+                        if proba[0][0] == b'malware':
                             _result = proba[0]
                         else:
                             _result = proba[1]
@@ -524,3 +629,89 @@ class RiskInDroid(object):
             print('        malware std_dev: {0:.2f}'.format(_malware_scores.std() * 100))
             print('        goodware mean: {0:.2f}'.format(_goodware_scores.mean() * 100))
             print('        goodware std_dev: {0:.2f}'.format(_goodware_scores.std() * 100))
+
+    def calculate_set_accuracy(self):
+        """
+        Calculate the accuracy of the training set used for RiskInDroid.
+        :return: None.
+        """
+
+        # Category of permissions for which to calculate the accuracy.
+        _cat = 'declared'
+
+        _k_fold = StratifiedKFold(n_splits=10, shuffle=True, random_state=self.seed)
+
+        _apks, _targets = self.get_training_vectors()
+
+        # Goodware and malware scores for the set.
+        _loc_m_scores = numpy.array([])
+        _loc_g_scores = numpy.array([])
+
+        # Correctly predicted targets for the set.
+        _loc_ok_targets = numpy.array([])
+
+        # The analysis is done using 10-cross fold validation.
+        for train_index, test_index in _k_fold.split(_apks[_cat], _targets):
+
+            _train_data = numpy.array(_apks[_cat])
+
+            # List of trained classifiers for the current fold.
+            _models = []
+
+            # Train the RiskInDroid classifiers for the current fold.
+            for m in tqdm(self.MODELS, dynamic_ncols=True, desc='Training classifiers',
+                          bar_format='{l_bar}{bar}|[{elapsed}<{remaining}]'):
+                m.fit(_train_data[train_index], _targets[train_index])
+                _models.append(m)
+
+            # Correctly predicted targets for the current fold.
+            _fold_ok_targets = 0
+
+            for loc_index in test_index:
+
+                # Compute the probability for every classifier in the list, indicating the risk of the app under test.
+                _probas = [list(zip(model.classes_, model.predict_proba([_train_data[loc_index]])[0])) for model in
+                           _models]
+
+                _mean_proba = numpy.array([])
+
+                # Get the mean probability generated by the classifiers.
+                for proba in _probas:
+
+                    # The risk score is given by the probability associated
+                    # with "malware" class output from the classifiers.
+                    if proba[0][0] == b'malware':
+                        _score = proba[0]
+                    else:
+                        _score = proba[1]
+
+                    _mean_proba = numpy.append(_mean_proba, _score[1])
+
+                _risk_val = _mean_proba.mean()
+
+                # We consider only correct predictions for calculating the mean
+                # and the standard deviation.
+                _true_target = _targets[loc_index]
+
+                # If the current app under test is a malware.
+                if _risk_val >= 0.5:
+                    # If the prediction is correct.
+                    if _true_target == b'malware':
+                        _fold_ok_targets += 1
+                        _loc_m_scores = numpy.append(_loc_m_scores, self.rescale_risk(_risk_val))
+
+                # If the current app under test is not a malware.
+                else:
+                    # If the prediction is correct.
+                    if _true_target == b'goodware':
+                        _fold_ok_targets += 1
+                        _loc_g_scores = numpy.append(_loc_g_scores, self.rescale_risk(_risk_val))
+
+            _loc_ok_targets = numpy.append(_loc_ok_targets, _fold_ok_targets / len(test_index))
+
+        print('    Training set:')
+        print('        accuracy: {0:.2f}'.format(_loc_ok_targets.mean() * 100))
+        print('        malware mean: {0:.2f}'.format(_loc_m_scores.mean()))
+        print('        malware std_dev: {0:.2f}'.format(_loc_m_scores.std()))
+        print('        goodware mean: {0:.2f}'.format(_loc_g_scores.mean()))
+        print('        goodware std_dev: {0:.2f}'.format(_loc_g_scores.std()))

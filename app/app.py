@@ -1,110 +1,126 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import hashlib
 import os
 import subprocess
+import time
 
 from flask import Flask
 from flask import jsonify
 from flask import make_response
+from flask import redirect
 from flask import render_template
 from flask import request
-from flask_sqlalchemy import SQLAlchemy
+from flask import url_for
 from sqlalchemy import cast
 from sqlalchemy.sql import text
+from werkzeug.utils import secure_filename
+
+from RiskInDroid import RiskInDroid
+from model import db, Apk
 
 
-app = Flask(__name__)
-
-app.config['DB_DIRECTORY'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'database')
-app.config['DB_7Z_PATH'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'database', 'permission_db.7z')
-app.config['DB_PATH'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'database', 'permission_db.db')
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + app.config['DB_PATH']
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
+ALLOWED_EXTENSIONS = {'apk', 'zip'}
 
 
-declared_permissions = db.Table('declared_permissions', db.metadata,
-                                db.Column('apk_id', db.String(32),
-                                          db.ForeignKey('apks.md5'), primary_key=True),
-                                db.Column('permission_id', db.Integer,
-                                          db.ForeignKey('permissions.id'), primary_key=True))
+def create_app():
 
-required_and_used_permissions = db.Table('required_and_used_permissions', db.metadata,
-                                         db.Column('apk_id', db.String(32),
-                                                   db.ForeignKey('apks.md5'), primary_key=True),
-                                         db.Column('permission_id', db.Integer,
-                                                   db.ForeignKey('permissions.id'), primary_key=True))
+    app = Flask(__name__)
 
-required_but_not_used_permissions = db.Table('required_but_not_used_permissions', db.metadata,
-                                             db.Column('apk_id', db.String(32),
-                                                       db.ForeignKey('apks.md5'), primary_key=True),
-                                             db.Column('permission_id', db.Integer,
-                                                       db.ForeignKey('permissions.id'), primary_key=True))
+    app.config['UPLOAD_DIR'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'upload')
+    app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 
-not_required_but_used_permissions = db.Table('not_required_but_used_permissions', db.metadata,
-                                             db.Column('apk_id', db.String(32),
-                                                       db.ForeignKey('apks.md5'), primary_key=True),
-                                             db.Column('permission_id', db.Integer,
-                                                       db.ForeignKey('permissions.id'), primary_key=True))
+    app.config['DB_DIRECTORY'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'database')
+    app.config['DB_7Z_PATH'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'database', 'permission_db.7z')
+    app.config['DB_PATH'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'database', 'permission_db.db')
 
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + app.config['DB_PATH']
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-class Apk(db.Model):
+    # Establish the database connection.
+    db.init_app(app)
 
-    __tablename__ = 'apks'
+    # Create the upload directory (if not already existing).
+    if not os.path.exists(app.config['UPLOAD_DIR']):
+        os.makedirs(app.config['UPLOAD_DIR'])
 
-    md5 = db.Column(db.String(32), primary_key=True)
-    type = db.Column(db.String(10), nullable=False)
-    source = db.Column(db.String(24), nullable=False)
-    name = db.Column(db.String(255), nullable=False)
-    risk = db.Column(db.Float, nullable=False)
-
-    declared_permissions = db.relationship('Permission', secondary=declared_permissions,
-                                           backref=db.backref('app_declaring',
-                                                              lazy='dynamic'))
-
-    required_and_used_permissions = db.relationship('Permission', secondary=required_and_used_permissions,
-                                                    backref=db.backref('app_requiring_and_using',
-                                                                       lazy='dynamic'))
-
-    required_but_not_used_permissions = db.relationship('Permission', secondary=required_but_not_used_permissions,
-                                                        backref=db.backref('app_requiring_but_not_using',
-                                                                           lazy='dynamic'))
-
-    not_required_but_used_permissions = db.relationship('Permission', secondary=not_required_but_used_permissions,
-                                                        backref=db.backref('app_not_requiring_but_using',
-                                                                           lazy='dynamic'))
-
-    def __repr__(self):
-        return '<Apk (md5="{0}", name="{1}", risk="{2}")>'.format(self.md5, self.name, self.risk)
-
-
-class Permission(db.Model):
-
-    __tablename__ = 'permissions'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), unique=True, nullable=False)
-
-    def __repr__(self):
-        return '<Permission (name="{0}")>'.format(self.name)
-
-
-def setup_app():
     # Check if the database file is already extracted from the archive, otherwise extract it.
     if not os.path.isfile(app.config['DB_PATH']):
         instruction = '7z x "{0}" -o"{1}"'.format(app.config['DB_7Z_PATH'], app.config['DB_DIRECTORY'])
-        subprocess.run(instruction)
+        subprocess.run(instruction, shell=True)
+
+    return app
 
 
-@app.route('/', methods=['GET'])
+application = create_app()
+
+
+@application.route('/', methods=['GET'], strict_slashes=False)
 def home():
     return render_template('index.html')
 
 
-@app.route('/apks', methods=['GET'])
+@application.route('/results', methods=['GET'], strict_slashes=False)
+def results():
+    return render_template('results.html')
+
+
+@application.route('/upload', methods=['POST'], strict_slashes=False)
+def upload_apk():
+
+    if request.method == 'POST':
+
+        # The POST request must contain a file.
+        if 'file' not in request.files:
+            return redirect(url_for('home'))
+
+        file = request.files['file']
+
+        # The POST request must contain a valid file.
+        if not file.filename.strip():
+            return redirect(url_for('home'))
+
+        if file and check_if_valid_file_name(file.filename):
+
+            filename = secure_filename(file.filename)
+
+            file_path = os.path.join(application.config['UPLOAD_DIR'],
+                                     '{0}_{1}'.format(time.strftime("%H-%M-%S_%d-%m-%Y"), filename))
+            file.save(file_path)
+
+            rid = RiskInDroid()
+
+            permissions = rid.get_permission_json(file_path)
+
+            try:
+
+                response = {
+                    'name': filename,
+                    'md5': md5sum(file_path),
+                    'risk': round(rid.calculate_risk(rid.get_feature_vector_from_json(permissions)), 3),
+                    'permissions':
+                        [val for val in
+                         list(map(lambda x: {'cat': 'Declared', 'name': x},
+                                  permissions['declared'])) +
+                         list(map(lambda x: {'cat': 'Required and Used', 'name': x},
+                                  permissions['requiredAndUsed'])) +
+                         list(map(lambda x: {'cat': 'Required but Not Used', 'name': x},
+                                  permissions['requiredButNotUsed'])) +
+                         list(map(lambda x: {'cat': 'Not Required but Used', 'name': x},
+                                  permissions['notRequiredButUsed']))]
+                }
+
+            except:
+                return 'The uploaded file is not valid', 400
+
+            return render_template('details.html', apk=response)
+
+    # If this is not a POST request.
+    return redirect(url_for('home'))
+
+
+@application.route('/apks', methods=['GET'], strict_slashes=False)
 def get_apks():
 
     query = Apk.query
@@ -144,8 +160,8 @@ def get_apks():
     return make_response(jsonify(response))
 
 
-@app.route('/details', methods=['GET'])
-def get_app_details():
+@application.route('/details', methods=['GET'], strict_slashes=False)
+def get_apk_details():
 
     md5 = request.args.get('md5')
 
@@ -159,15 +175,30 @@ def get_app_details():
         'source': apk.source,
         'permissions':
             [val for val in
-             list(map(lambda x: {'cat': 'Declared', 'name': x.name}, apk.declared_permissions)) +
-             list(map(lambda x: {'cat': 'Required and Used', 'name': x.name}, apk.required_and_used_permissions)) +
-             list(map(lambda x: {'cat': 'Required but Not Used', 'name': x.name}, apk.required_but_not_used_permissions)) +
-             list(map(lambda x: {'cat': 'Not Required but Used', 'name': x.name}, apk.not_required_but_used_permissions))]
+             list(map(lambda x: {'cat': 'Declared', 'name': x.name},
+                      apk.declared_permissions)) +
+             list(map(lambda x: {'cat': 'Required and Used', 'name': x.name},
+                      apk.required_and_used_permissions)) +
+             list(map(lambda x: {'cat': 'Required but Not Used', 'name': x.name},
+                      apk.required_but_not_used_permissions)) +
+             list(map(lambda x: {'cat': 'Not Required but Used', 'name': x.name},
+                      apk.not_required_but_used_permissions))]
     }
 
     return make_response(jsonify(response))
 
 
+def md5sum(file_path, block_size=65536):
+    md5_hash = hashlib.md5()
+    with open(file_path, 'rb') as filename:
+        for chunk in iter(lambda: filename.read(block_size), b''):
+            md5_hash.update(chunk)
+    return md5_hash.hexdigest()
+
+
+def check_if_valid_file_name(file_name):
+    return '.' in file_name and file_name.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 if __name__ == '__main__':
-    setup_app()
-    app.run()
+    application.run()

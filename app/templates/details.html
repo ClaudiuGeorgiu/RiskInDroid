@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>RiskInDroid</title>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+        <link href='//fonts.googleapis.com/css?family=Droid Sans Mono' rel='stylesheet'>
+
+        <script type="text/javascript" src="{{ url_for('static', filename='jquery.slimscroll.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='site.js') }}"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="row" style="padding-top: 15px; padding-left: 15px; padding-right: 15px;">
+                <div id="details-container">
+                    <div style="overflow: hidden;">
+                        <div id="details-title" class="details details-row" style="text-align: center;"></div>
+                        <div id="details-hash" class="details details-row" style="text-align: center;"></div>
+                        <div style="position: relative;">
+                            <div class="risk-progress">
+                                <div class="risk-progress-bar"></div>
+                            </div>
+                            <div class="progress-risk-value details" style="color: #657b83;"></div>
+                        </div>
+                        <table id="risk-in-droid-details"></table>
+                        <div style="margin-bottom: 15px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            // Load the table when the page is ready.
+            $(document).ready(function() {
+                $("#risk-in-droid-details").tabulator({
+                    height: $(window).height() - 162,
+                    minHeight: 368,
+                    colMinWidth: 100,
+                    fitColumns: true,
+                    colResizable: false,
+                    groupBy: "cat",
+                    columns:[
+                        { title: "Permissions", field: "name", sortable: true, sorter: "string", align: "center" }
+                    ],
+                    tableLoaded: function() {
+                        if (window.detailsTableLoaded) {
+                            return;
+                        }
+                        window.detailsTableLoaded = true;
+
+                        var riskContainer = $("#risk-in-droid-details")
+
+                        var riskTableHolder = riskContainer.find(".tabulator-tableHolder");
+
+                        riskTableHolder.slimScroll({
+                            height: "calc(100% - " + 41 + "px)",
+                            allowPageScroll: true,
+                            color: "#2980b9",
+                            opacity: .5
+                        });
+
+                        riskTableHolder.css("height", "100%");
+
+                        $("#details-title").html("{{ apk['name'] }}");
+                        $("#details-hash").html("{{ apk['md5'] }}");
+                        riskContainer.tabulator("setData", {{ apk['permissions']|tojson }});
+
+                        clearTimeout(window.textColorTimeout);
+
+                        var red = 0;
+                        var green = 255;
+
+                        var riskVal = {{ apk['risk'] }};
+
+                        if (riskVal > 50) {
+                            // Decrease only the green color in order to obtain red.
+                            green = Math.round(255 * ((100 - riskVal) / 50));
+                            red = 255;
+                        }
+                        else {
+                            // Increase only the red color in order to obtain yellow.
+                            red = Math.round(255 * (riskVal / 50));
+                        }
+
+                        if (riskVal > 75) {
+                            window.textColorTimeout = setTimeout(function () {
+                                $(".progress-risk-value").css("color", "#f6f6f6")
+                            }, 1000);
+                        }
+                        else {
+                            window.textColorTimeout = setTimeout(function () {
+                                $(".progress-risk-value").css("color", "#657b83")
+                            }, 1000);
+                        }
+
+                        $(".risk-progress > .risk-progress-bar").css({
+                            "width": riskVal + "%",
+                            "background-color": "rgb(" + red + ", " + green + ", 0)"
+                        });
+
+                        $('.progress-risk-value').html(riskVal + " / 100");
+                    },
+                    rowClick: function(e, id, data, row) {
+                        // Row clicked
+                    }
+                });
+            });
+
+            // Resize the tables when the browser's window is resized.
+            $(window).resize(function(){
+                $("#risk-in-droid-details").tabulator("redrawUpdateHeight", 147);
+            });
+        </script>
+    </body>
+</html>

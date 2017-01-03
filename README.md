@@ -17,11 +17,12 @@ Unlike other tools, **RiskInDroid** doesn't consider only the permissions declar
 * Ghost permissions - not declared but with usages inside bytecode
 * Useless permissions - declared but never used inside bytecode
 
-From the above sets of permissions and considering only the official list of Android permissions, feature vectors (made by 0 and 1) are built and given to the classifiers, which then compute a risk value. The precision and the reliability of **RiskInDroid** are empirically tested on a dataset made of more than 6K malware samples and 112K apps.
+From the above sets of permissions and considering only the official list of Android permissions, feature vectors (made by `0`s and `1`s) are built and given to the classifiers, which then compute a risk value. The precision and the reliability of **RiskInDroid** are empirically tested on a dataset made of more than 6K malware samples and 112K apps.
 
 
 
 ## License
 
 With the exception of [PermissionChecker.jar](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/app/PermissionChecker.jar), you are free to use this code under the [MIT License](https://opensource.org/licenses/MIT).
-[PermissionChecker.jar](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/app/PermissionChecker.jar) belongs to [Talos srls](http://www.talos-security.com/) and you can use it as is with RiskInDroid, for research purposes only.
+
+[PermissionChecker.jar](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/app/PermissionChecker.jar) belongs to [Talos srls](http://www.talos-security.com/) and you can use it "AS IS" with RiskInDroid, for research purposes only.

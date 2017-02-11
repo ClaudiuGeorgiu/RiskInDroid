@@ -17,7 +17,57 @@ Unlike other tools, **RiskInDroid** doesn't consider only the permissions declar
 * Ghost permissions - not declared but with usages inside bytecode
 * Useless permissions - declared but never used inside bytecode
 
-From the above sets of permissions and considering only the official list of Android permissions, feature vectors (made by `0`s and `1`s) are built and given to the classifiers, which then compute a risk value. The precision and the reliability of **RiskInDroid** are empirically tested on a dataset made of more than 6K malware samples and 112K apps.
+From the above sets of permissions (and considering only the official list of Android permissions), feature vectors (made by `0`s and `1`s) are built and given to the classifiers, which then compute a risk value. The precision and the reliability of **RiskInDroid** are empirically tested on a dataset made of more than 6K malware samples and 112K apps.
+
+### Demo
+
+If you want to see the tool in action, you can visit [this link](http://46.101.119.244/), otherwise continue reading for instructions on how to install it on your own computer.
+
+
+
+## Usage
+
+There are two ways of getting a working copy of **RiskInDroid** on your own computer: either by using Docker or by using a Python 3 environment. In both cases, the first thing to do is to get a local copy of this repository, so open up a terminal in the directory where you want to save the project and clone the repository:
+
+```Shell
+# This could take quite a lot of time since the repository contains a 25 MB compressed database
+$ git clone https://github.com/ClaudiuGeorgiu/RiskInDroid.git
+$ cd RiskInDroid
+```
+
+#### Using Docker
+
+This is the suggested way of using **RiskInDroid**, since the only requirement is to have Docker installed. Make sure to execute the following commands in the previously created `RiskInDroid` directory (the folder containing the `Dockerfile`):
+
+```Shell
+# This will take some time, since a lot of things have to be downloaded
+$ docker build -t riskindroid .
+$ docker run -p 8080:80 riskindroid
+# Now open http://localhost:8080/ in your browser
+```
+
+#### Using Python
+
+This method was tested and works on Ubuntu 16.04. Python 3 and Java must be installed on your computer, optionally you can install `p7zip-full` in order to extract the database archive automatically, but this can also be done manually by using any other compatible tool to extract the content of `RiskInDroid/app/database/permission_db.7z` in the `RiskInDroid/app/database` directory. Make sure to execute the following commands in the previously created `RiskInDroid` directory:
+
+```Shell
+# If not using virtualenv (https://virtualenv.pypa.io/), skip the next 2 lines
+$ virtualenv -p python3 venv
+$ source venv/bin/activate
+
+# Install RiskInDroid requirements
+$ pip3 install -r requirements.txt
+
+# Run RiskInDroid
+$ python3 app/app.py
+# Now open http://localhost:5000/ in your browser
+```
+
+
+
+## Contributing
+
+Questions, bug reports and pull requests are welcome on GitHub at [http://github.com/ClaudiuGeorgiu/RiskInDroid](http://github.com/ClaudiuGeorgiu/RiskInDroid).
 
 
 

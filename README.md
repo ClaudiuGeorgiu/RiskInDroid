@@ -21,7 +21,9 @@ From the above sets of permissions (and considering only the official list of An
 
 ### Demo
 
-If you want to see the tool in action, you can visit [this link](http://46.101.119.244/), otherwise continue reading for instructions on how to install it on your own computer.
+If you want to quickly see the tool in action, you can visit [this link](http://46.101.119.244/) where you can browse the full experimental results and calculate the risk of other apps, otherwise continue reading for instructions on how to install it on your own computer. Below you can see a screenshot of **RiskInDroid**:
+
+![Screenshot](screenshot.png)
 
 
 

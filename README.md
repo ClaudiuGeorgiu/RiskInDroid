@@ -11,13 +11,15 @@
 * Gradient Boosting (GB)
 * Logistic Regression (LR)
 
-Unlike other tools, **RiskInDroid** doesn't consider only the permissions declared into apps' manifest, but carries out reverse engineering on the apps to retrieve the bytecode and then infers (through static analysis) which permissions are actually used and which not, extracting in this way 4 set of permissions for every analyzed app:
+Unlike other tools, **RiskInDroid** doesn't consider only the permissions declared into apps' manifest, but carries out reverse engineering on the apps to retrieve the bytecode and then infers (through static analysis) which permissions are actually used and which not, extracting in this way 4 sets of permissions for every analyzed app:
 * Declared permissions - extracted from app's manifest
 * Exploited permissions - declared and actually used inside bytecode
 * Ghost permissions - not declared but with usages inside bytecode
 * Useless permissions - declared but never used inside bytecode
 
 From the above sets of permissions (and considering only the official list of Android permissions), feature vectors (made by `0`s and `1`s) are built and given to the classifiers, which then compute a risk value. The precision and the reliability of **RiskInDroid** are empirically tested on a dataset made of more than 6K malware samples and 112K apps.
+
+Further information can be found in this [paper](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/RiskInDroid_paper.pdf) ([citation](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/DESCRIPTION.md#citation)).
 
 ### Demo
 
@@ -69,7 +71,7 @@ $ python3 app/app.py
 
 ## Contributing
 
-Questions, bug reports and pull requests are welcome on GitHub at [http://github.com/ClaudiuGeorgiu/RiskInDroid](http://github.com/ClaudiuGeorgiu/RiskInDroid).
+Questions, bug reports and pull requests are welcome on GitHub at [https://github.com/ClaudiuGeorgiu/RiskInDroid](https://github.com/ClaudiuGeorgiu/RiskInDroid).
 
 
 

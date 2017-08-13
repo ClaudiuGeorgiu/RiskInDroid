@@ -77,6 +77,6 @@ Questions, bug reports and pull requests are welcome on GitHub at [https://githu
 
 ## License
 
-With the exception of [PermissionChecker.jar](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/app/PermissionChecker.jar), you are free to use this code under the [MIT License](https://opensource.org/licenses/MIT).
+With the exception of [PermissionChecker.jar](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/app/PermissionChecker.jar), you are free to use this code under the [MIT License](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/LICENSE).
 
 [PermissionChecker.jar](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/app/PermissionChecker.jar) belongs to [Talos srls](http://www.talos-sec.com/) and you can use it "AS IS" with RiskInDroid, for research purposes only.

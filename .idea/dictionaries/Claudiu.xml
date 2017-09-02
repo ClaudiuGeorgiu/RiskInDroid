@@ -2,15 +2,18 @@
   <dictionary name="Claudiu">
     <words>
       <w>apks</w>
+      <w>dataset</w>
       <w>editcancel</w>
       <w>editval</w>
       <w>keydown</w>
+      <w>malware</w>
       <w>mutators</w>
       <w>namefil</w>
       <w>proba</w>
       <w>probas</w>
       <w>riskfil</w>
       <w>riskindroid</w>
+      <w>screenshot</w>
       <w>sqlalchemy</w>
       <w>sqlite</w>
     </words>

@@ -134,3 +134,6 @@ ENV/
 
 # SQLite database
 *.db
+
+# SSL certificate
+riskindroid.pem

@@ -22,6 +22,9 @@ RUN apt-get update && \
 # Define JAVA_HOME environment variable
 ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
 
+# Copy SSL certificates (only when enabling SSL on the server).
+# COPY riskindroid.pem /etc/ssl/
+
 # Setup Nginx
 RUN rm /etc/nginx/sites-enabled/default
 COPY config/flask.conf /etc/nginx/sites-available/

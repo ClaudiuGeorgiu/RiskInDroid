@@ -2,6 +2,7 @@
 
 > A tool for quantitative risk analysis of Android apps based on machine learning techniques.
 
+[![Codacy](https://api.codacy.com/project/badge/Grade/13be50b318c74ac88fba3e13bd620f9c)](https://www.codacy.com/app/ClaudiuGeorgiu/RiskInDroid)
 [![Python version](http://img.shields.io/badge/Python-3.5.2-green.svg)](http://www.python.org/download/releases/3.5.2/)
 [![scikit-learn version](http://img.shields.io/badge/scikit--learn-0.18-blue.svg)](http://scikit-learn.org/)
 

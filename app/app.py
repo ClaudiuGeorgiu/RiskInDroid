@@ -29,7 +29,7 @@ def create_app():
     app = Flask(__name__)
 
     app.config['UPLOAD_DIR'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'upload')
-    app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
+    app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
     app.config['DB_DIRECTORY'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'database')
     app.config['DB_7Z_PATH'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'database', 'permission_db.7z')

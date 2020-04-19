@@ -1,45 +1,38 @@
-FROM python:3.5.2
+FROM python:3.8.2-slim-buster
 
-# Install Java 8 (in order to run the Permission Checker)
-RUN echo "deb [check-valid-until=no] http://archive.debian.org/debian jessie-backports main" | tee /etc/apt/sources.list.d/jessie-backports.list && \
-    apt-get -o Acquire::Check-Valid-Until=false update && \
-    apt-get install -t jessie-backports openjdk-8-jre-headless -y && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get clean
+# Install the needed tools.
+RUN bash -c 'for i in {1..8}; do mkdir -p "/usr/share/man/man$i"; done' && \
+    apt update && apt install --no-install-recommends -y \
+    openjdk-11-jre-headless nginx supervisor p7zip-full gcc libc6-dev && \
+    apt clean && rm -rf /var/lib/apt/lists/*
 
-# Install Nginx + UWSGI + 7z
-RUN apt-get update -o Acquire::Check-Valid-Until=false && \
-    apt-get -y install \
-    nginx \
-    supervisor \
-    uwsgi \
-    p7zip-full
+# Setup Supervisor.
+RUN mkdir -p /var/log/supervisor/
+COPY ./config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Define JAVA_HOME environment variable
-ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
+# Setup Nginx.
+COPY ./config/nginx-flask.conf /etc/nginx/sites-available/
+RUN rm /etc/nginx/sites-enabled/default && \
+    ln -s /etc/nginx/sites-available/nginx-flask.conf /etc/nginx/sites-enabled/nginx-flask.conf && \
+    echo "daemon off;" >> /etc/nginx/nginx.conf
 
-# Copy SSL certificates (only when enabling SSL on the server)
-# COPY riskindroid.pem /etc/ssl/
+# Install and setup uWSGI.
+RUN pip3 install --no-cache-dir --upgrade uwsgi pip
+COPY ./config/uwsgi.ini /var/www/app/
 
-# Setup Nginx
-RUN rm /etc/nginx/sites-enabled/default
-COPY config/flask.conf /etc/nginx/sites-available/
-RUN ln -s /etc/nginx/sites-available/flask.conf /etc/nginx/sites-enabled/flask.conf
-COPY config/uwsgi.ini /var/www/app/
-RUN echo "daemon off;" >> /etc/nginx/nginx.conf
+# Copy requirements and install.
+COPY ./requirements.txt /var/www/app/
+RUN pip3 install --no-cache-dir -r /var/www/app/requirements.txt
 
-# Setup Supervisor
-RUN mkdir -p /var/log/supervisor
-COPY config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Copy application.
+COPY ./app /var/www/app/
 
-# Copy requirements and install
-COPY requirements.txt /var/www/app
-RUN pip3 install -r /var/www/app/requirements.txt
-
-# Copy application
-COPY ./app /var/www/app
-
-# Extract database
+# Extract the compressed database.
 RUN 7z x /var/www/app/database/permission_db.7z -o/var/www/app/database/ -y
 
-CMD ["/usr/bin/supervisord"]
+# The app doesn't run as root, make sure it can access the files.
+RUN chmod -R a+rw /var/www/app/
+
+EXPOSE 80
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

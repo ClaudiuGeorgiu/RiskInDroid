@@ -132,8 +132,9 @@ ENV/
 # Rope project settings
 .ropeproject
 
-# SQLite database
-*.db
+# Upload directory
+upload/
+!upload/.gitkeep
 
-# SSL certificate
-riskindroid.pem
+# SQLite database (the compressed version is already included)
+*.db

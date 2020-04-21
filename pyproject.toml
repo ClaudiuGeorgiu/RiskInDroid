@@ -1,0 +1,18 @@
+[tool.black]
+line-length = 88
+include = '\.pyi?$'
+exclude = '''
+(
+    /(
+      | \.git
+      | \.github
+      | config
+      | docs
+      | venv
+      | app/database
+      | app/models
+      | app/static
+      | app/templates
+    )/
+)
+'''

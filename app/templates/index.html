@@ -1,59 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>RiskInDroid</title>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, minimum-scale=0.75, initial-scale=0.75, maximum-scale=0.75">
 
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
-        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <title>RiskInDroid</title>
 
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/jquery@3.5.0/dist/jquery.min.js"></script>
 
-        <link href='//fonts.googleapis.com/css?family=Droid Sans Mono' rel='stylesheet'>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/jquery-ui-dist@1.12.1/jquery-ui.min.css">
+    <script type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/jquery-ui-dist@1.12.1/jquery-ui.min.js"></script>
 
-        <script type="text/javascript" src="{{ url_for('static', filename='filestyle.min.js') }}"></script>
-        <link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">
-    </head>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css">
+    <script type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js"></script>
 
-    <body>
-        <div class="container">
-            <div class="row" style="position: relative;">
-                <h1 align="center" style="margin-top: 100px; margin-bottom: 50px;">RiskInDroid</h1>
-                <div class="col-sm-6 text-center">
-                    <h3>Try it yourself</h3>
-                    <form enctype="multipart/form-data" method="POST" action="{{ url_for('upload_apk') }}" role="form">
-                        <div class="row">
-                            <label class="col-xs-12">(Max. file size: 10 MB)</label>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-10 col-xs-offset-1 text-center">
-                                <input type="file" name="file" class="filestyle" data-buttonText="Choose app"
-                                   data-buttonName="btn-primary" data-icon="false" data-placeholder="No app selected">
-                            </div>
-                        </div>
-                        <div style="height: 8px;"></div>
-                        <div class="row">
-                            <div class="col-xs-12 text-center">
-                                <button type="submit" class="btn btn-success">
-                                    <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> Submit app
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="visible-xs" style="height: 50px;"></div>
-                <div class="col-sm-6 text-center">
-                    <h3>Browse the experimental results of RiskInDroid</h3>
-                    <a href="{{ url_for('results') }}" class="btn btn-success" style="margin: 0 auto;">
-                        <span class="glyphicon glyphicon-cloud-download" aria-hidden="true"></span> See results
-                    </a>
-                </div>
-            </div>
-            <div class="row">
-                <h5 align="center" style="margin-top: 120px;">Source code is available at: <a href="https://github.com/ClaudiuGeorgiu/RiskInDroid">https://github.com/ClaudiuGeorgiu/RiskInDroid</a></h5>
-            </div>
+    <script type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/sweetalert2@9.10.10/dist/sweetalert2.all.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/dropzone@5.7.0/dist/dropzone.min.js"></script>
+
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Droid+Sans+Mono">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+    <!-- Needed for IE -->
+    <script type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/promise-polyfill@8.1.3/dist/polyfill.min.js"></script>
+
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='dropzone-config.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">
+</head>
+
+<body>
+<div class="container">
+    <div class="row limited-row text-center">
+        <div class="col-12">
+            <h2 style="margin-top: 70px; margin-bottom: 70px;">RiskInDroid</h2>
         </div>
-    </body>
+    </div>
+
+    <div class="row limited-row" style="text-align: justify;">
+        <label class="col-12"><b>RiskInDroid</b> is a tool for quantitative risk
+            analysis of Android applications based on machine learning techniques.
+            The tool uses classification techniques in order to generate a numeric
+            risk value between 0 and 100 for a given app.
+        </label>
+    </div>
+
+    <div class="row limited-row text-center btn-row">
+        <div class="col-md-6">
+            <button id="upload-new-app"
+                    class="btn btn-primary d-flex justify-content-center align-content-between col-12">
+                <span>Analyze application</span>
+                <i class="material-icons" style="margin-left: 10px;">adb</i>
+            </button>
+        </div>
+        <div class="d-md-none" style="min-height: 10px; height: 10px;">&nbsp;</div>
+        <div class="col-md-6">
+            <a href="{{ url_for('results') }}"
+               class="btn btn-success d-flex justify-content-center align-content-between col-12">
+                <span>Experimental results</span>
+                <i class="material-icons"
+                   style="margin-left: 10px;">file_download</i>
+            </a>
+        </div>
+    </div>
+
+    <div class="row limited-row text-center">
+        <form id="app-upload-form" class="col-12 text-center justify-content-center"
+              action="{{ url_for('upload_apk') }}" enctype="multipart/form-data">
+            <div id="app-upload-dropzone" class="col-12 dropzone">
+                <div id="app-upload-message" class="dz-message">
+                    Drop an application here or click to choose one
+                    <br/>
+                    (max. 100 MB)
+                </div>
+                <div id="file-progress-container" class="progress">
+                    <div id="file-progress"
+                         class="progress-bar progress-bar-striped progress-bar-animated"
+                         role="progressbar"></div>
+                </div>
+            </div>
+            <button id="submit-button" type="submit" class="col-12 btn btn-primary">
+                Submit
+            </button>
+        </form>
+    </div>
+
+    <div class="row limited-row text-center">
+        <div class="col-12">
+            <h6 style="margin-top: 70px;">
+                Source code is available at:
+                <a style="word-wrap: break-word;"
+                   href="https://github.com/ClaudiuGeorgiu/RiskInDroid">
+                    https://github.com/ClaudiuGeorgiu/RiskInDroid
+                </a>
+            </h6>
+        </div>
+    </div>
+</div>
+</body>
 </html>

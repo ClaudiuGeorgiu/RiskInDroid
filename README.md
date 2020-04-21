@@ -4,8 +4,9 @@
 > learning techniques.
 
 [![Codacy](https://api.codacy.com/project/badge/Grade/13be50b318c74ac88fba3e13bd620f9c)](https://www.codacy.com/app/ClaudiuGeorgiu/RiskInDroid)
-[![Python version](http://img.shields.io/badge/Python-3.5.2-green.svg)](http://www.python.org/download/releases/3.5.2/)
-[![scikit-learn version](http://img.shields.io/badge/scikit--learn-0.18-blue.svg)](http://scikit-learn.org/)
+[![Docker Hub](https://img.shields.io/docker/cloud/build/claudiugeorgiu/riskindroid)](https://hub.docker.com/r/claudiugeorgiu/riskindroid)
+[![Python Version](https://img.shields.io/badge/Python-3.5%2B-green.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/LICENSE)
 
 
 
@@ -42,7 +43,7 @@ samples and 112K apps.
 ## ❱ Publication
 
 More details about **RiskInDroid** can be found in the paper
-"[RiskInDroid: Machine Learning-based Risk Analysis on Android](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/RiskInDroid_paper.pdf)"
+"[RiskInDroid: Machine Learning-based Risk Analysis on Android](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/docs/paper/RiskInDroid.pdf)"
 ([official pubblication link](https://link.springer.com/chapter/10.1007/978-3-319-58469-0_36)).
 You can cite the paper as follows:
 
@@ -69,13 +70,10 @@ You can cite the paper as follows:
 
 ## ❱ Demo
 
-If you want to quickly see the tool in action, visit
-[https://www.riskindroid.com](https://www.riskindroid.com) to browse the full
-experimental results and calculate the risk of other apps, otherwise continue reading
-for instructions on how to install it on your own computer. Below you can see a
-screenshot of the live demo of RiskInDroid:
+This tool lets you browse the full experimental results and calculate the risk of
+new applications. Below you can see a brief demo of RiskInDroid:
 
-![Screenshot](https://raw.githubusercontent.com/ClaudiuGeorgiu/RiskInDroid/master/screenshot.png)
+![Web](https://raw.githubusercontent.com/ClaudiuGeorgiu/RiskInDroid/master/docs/demo/web.gif)
 
 
 
@@ -120,7 +118,7 @@ $ docker tag claudiugeorgiu/riskindroid riskindroid
 #### Install
 
 If you downloaded the official image from Docker Hub, you are ready to use the tool,
-otherwise execute the following commands in the previously created `RiskInDroid/`
+otherwise execute the following command in the previously created `RiskInDroid/`
 directory (the folder containing the `Dockerfile`) in order to build the Docker image:
 
 ```Shell
@@ -140,16 +138,10 @@ $ docker run --rm -p 8080:80 riskindroid
 $ # Navigate to http://localhost:8080/ to use RiskInDroid.
 ```
 
-The live demo at [https://www.riskindroid.com](https://www.riskindroid.com) is also a
-Docker container deployed with the following command:
-
-```Shell
-$ docker run \
-    -d --restart=always \
-    -p 80:80 -p 443:443 \
-    -v "${PWD}/app/upload":/var/www/app/upload/ \
-    riskindroid
-```
+If you need to keep a persistent copy of the uploaded applications, mount
+`/var/www/app/upload/` directory from the container to the host (e.g., add
+`-v "${PWD}":"/var/www/app/upload/"` parameter to the above command to save
+the uploaded applications the current directory).
 
 ### From source
 
@@ -157,11 +149,11 @@ $ docker run \
 
 #### Prerequisites
 
-To use RiskInDroid you need `Python 3` (at least `3.5`), `Java 8` and a tool to extract
-the content of `RiskInDroid/app/database/permission_db.7z` archive (e.g., `p7zip-full`
-can be used for this task in Ubuntu). Note: although possible, the installation of some
-of the Python libraries is not straightforward on Windows, the usage of a Linux
-distribution such as Ubuntu is advised.
+To use RiskInDroid you need `Python 3` (at least `3.5`), `Java` (at least version `8`)
+and a tool to extract the content of `RiskInDroid/app/database/permission_db.7z`
+archive (e.g., `p7zip-full` can be used for this task in Ubuntu). Note: although
+possible, the installation of some of the Python libraries is not straightforward
+on Windows, the usage of a Linux distribution such as Ubuntu is advised.
 
 #### Install
 

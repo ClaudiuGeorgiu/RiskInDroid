@@ -14,6 +14,8 @@
             <path value="file://$PROJECT_DIR$/app/static" />
             <path value="file://$PROJECT_DIR$/app/upload" />
             <path value="file://$PROJECT_DIR$/app/test/test_resources" />
+            <path value="file://$PROJECT_DIR$/.github" />
+            <path value="file://$PROJECT_DIR$/.github/workflows" />
           </resourceRoots>
         </entryData>
       </entry>

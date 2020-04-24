@@ -1,6 +1,6 @@
 # RiskInDroid
 
-> A tool for quantitative risk analysis of Android apps based on machine
+> A tool for quantitative risk analysis of Android applications based on machine
 > learning techniques.
 
 [![Codacy](https://api.codacy.com/project/badge/Grade/13be50b318c74ac88fba3e13bd620f9c)](https://www.codacy.com/app/ClaudiuGeorgiu/RiskInDroid)
@@ -39,6 +39,8 @@ classifiers, which then compute a risk value. The precision and the reliability 
 **RiskInDroid** have been empirically tested on a dataset made of more than 6K malware
 samples and 112K apps.
 
+`NOTE:` the data collection and the experiments took place in late 2016.
+
 
 
 ## ❱ Publication
@@ -71,8 +73,9 @@ You can cite the paper as follows:
 
 ## ❱ Demo
 
-This tool lets you browse the full experimental results and calculate the risk of
-new applications. Below you can see a brief demo of RiskInDroid:
+You can browse the full experimental results through a web interface and calculate the
+risk of new applications (by uploading the `.apk` file). Below you can see a brief
+demo of RiskInDroid:
 
 ![Web](https://raw.githubusercontent.com/ClaudiuGeorgiu/RiskInDroid/master/docs/demo/web.gif)
 
@@ -142,7 +145,7 @@ $ # Navigate to http://localhost:8080/ to use RiskInDroid.
 If you need to keep a persistent copy of the uploaded applications, mount
 `/var/www/app/upload/` directory from the container to the host (e.g., add
 `-v "${PWD}":"/var/www/app/upload/"` parameter to the above command to save
-the uploaded applications the current directory).
+the uploaded applications in the current directory).
 
 ### From source
 
@@ -187,6 +190,11 @@ $ python3 app/app.py
 
 $ # Navigate to http://localhost:5000/ to use RiskInDroid.
 ```
+
+`NOTE:` the repository already contains the pre-trained models for the used
+classifiers, if you want to train the models again (e.g., to use a newer version of
+*scikit-learn*) just delete the contents of `app/models/` directory. The models will
+be recreated from the source data the next time an application is analyzed.
 
 
 

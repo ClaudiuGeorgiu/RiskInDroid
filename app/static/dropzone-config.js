@@ -48,6 +48,7 @@ Dropzone.options.appUploadDropzone = false;
                 maxFilesize: '100',
                 autoProcessQueue: false,
                 maxFiles: 1,
+                timeout: 0,
                 dragover: function () {
                     dropzoneElement.addClass('hover dark-background');
                 },

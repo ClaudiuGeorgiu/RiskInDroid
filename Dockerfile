@@ -1,8 +1,7 @@
-FROM python:3.8.2-slim-buster
+FROM python:3.10.1-slim-bullseye
 
 # Install the needed tools.
-RUN bash -c 'for i in {1..8}; do mkdir -p "/usr/share/man/man$i"; done' && \
-    apt update && apt install --no-install-recommends -y \
+RUN apt update && apt install --no-install-recommends -y \
     openjdk-11-jre-headless nginx supervisor p7zip-full gcc libc6-dev && \
     apt clean && rm -rf /var/lib/apt/lists/*
 

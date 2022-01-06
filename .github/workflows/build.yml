@@ -38,8 +38,8 @@ jobs:
           pytest --verbose
 
   publish:
-    # Run only if the previous step succeeds (only master branch, no pull requests).
-    if: endsWith(github.ref, '/master') && contains(github.event_name, 'pull_request') == false
+    # Run only if the previous step succeeds (only master branch or new tags, no pull requests).
+    if: (endsWith(github.ref, '/master') || startsWith(github.ref, 'refs/tags/v')) && contains(github.event_name, 'pull_request') == false
     needs: test
     name: Push updated version to Docker Hub
     runs-on: ubuntu-latest

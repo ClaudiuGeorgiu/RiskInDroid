@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ 3.5, 3.6, 3.7, 3.8 ]
+        python-version: [ 3.7, 3.8, 3.9, '3.10' ]
         os: [ ubuntu-latest ]
 
     steps:
@@ -36,3 +36,36 @@ jobs:
         run: |
           rm ./app/models/*
           pytest --verbose
+
+  publish:
+    # Run only if the previous step succeeds (only master branch, no pull requests).
+    if: endsWith(github.ref, '/master') && contains(github.event_name, 'pull_request') == false
+    needs: test
+    name: Push updated version to Docker Hub
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: claudiugeorgiu
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: claudiugeorgiu/riskindroid
+          tags: |
+            type=raw,value=latest
+            type=semver,pattern={{version}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}

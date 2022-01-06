@@ -5,8 +5,7 @@
 
 [![Codacy](https://app.codacy.com/project/badge/Grade/13be50b318c74ac88fba3e13bd620f9c)](https://www.codacy.com/gh/ClaudiuGeorgiu/RiskInDroid)
 [![Actions Status](https://github.com/ClaudiuGeorgiu/RiskInDroid/workflows/Build/badge.svg)](https://github.com/ClaudiuGeorgiu/RiskInDroid/actions?query=workflow%3ABuild)
-[![Docker Hub](https://img.shields.io/docker/cloud/build/claudiugeorgiu/riskindroid)](https://hub.docker.com/r/claudiugeorgiu/riskindroid)
-[![Python Version](https://img.shields.io/badge/Python-3.5%2B-green.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![Python Version](https://img.shields.io/badge/Python-3.7%2B-green.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/LICENSE)
 
 
@@ -39,7 +38,9 @@ classifiers, which then compute a risk value. The precision and the reliability 
 **RiskInDroid** have been empirically tested on a dataset made of more than 6K malware
 samples and 112K apps.
 
-`NOTE:` the data collection and the experiments took place in late 2016.
+`NOTE:` the data collection and the experiments took place in late 2016. Since then, the
+used libraries have been updated and the models have been retrained (by using the same
+dataset), so the current results might slightly differ from the original.
 
 
 
@@ -47,7 +48,7 @@ samples and 112K apps.
 
 More details about **RiskInDroid** can be found in the paper
 "[RiskInDroid: Machine Learning-based Risk Analysis on Android](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/docs/paper/RiskInDroid.pdf)"
-([official pubblication link](https://link.springer.com/chapter/10.1007/978-3-319-58469-0_36)).
+([official publication link](https://link.springer.com/chapter/10.1007/978-3-319-58469-0_36)).
 You can cite the paper as follows:
 
 > A. Merlo, G.C. Georgiu. "RiskInDroid: Machine Learning-based Risk Analysis on Android",
@@ -104,7 +105,7 @@ is to have a recent version of Docker installed:
 
 ```Shell
 $ docker --version             
-Docker version 19.03.0, build aeac949
+Docker version 20.10.7, build f0df350
 ```
 
 #### Official Docker Hub image
@@ -153,7 +154,7 @@ the uploaded applications in the current directory).
 
 #### Prerequisites
 
-To use RiskInDroid you need `Python 3` (at least `3.5`), `Java` (at least version `8`)
+To use RiskInDroid you need `Python 3` (at least `3.7`), `Java` (at least version `8`)
 and a tool to extract the content of `RiskInDroid/app/database/permission_db.7z`
 archive (e.g., `p7zip-full` can be used for this task in Ubuntu). Note: although
 possible, the installation of some of the Python libraries is not straightforward

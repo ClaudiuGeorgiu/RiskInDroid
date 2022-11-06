@@ -1,4 +1,4 @@
-FROM python:3.10.1-slim-bullseye
+FROM python:3.11-slim-bullseye
 
 # Install the needed tools.
 RUN apt update && apt install --no-install-recommends -y \

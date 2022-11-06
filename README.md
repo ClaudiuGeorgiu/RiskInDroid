@@ -1,12 +1,7 @@
-# RiskInDroid
+# RiskInDroid &middot; [![Codacy](https://app.codacy.com/project/badge/Grade/13be50b318c74ac88fba3e13bd620f9c)](https://www.codacy.com/gh/ClaudiuGeorgiu/RiskInDroid) [![Actions Status](https://github.com/ClaudiuGeorgiu/RiskInDroid/workflows/Build/badge.svg)](https://github.com/ClaudiuGeorgiu/RiskInDroid/actions?query=workflow%3ABuild) [![Python Version](https://img.shields.io/badge/Python-3.8%2B-green.svg?logo=python&logoColor=white)](https://www.python.org/downloads/) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/LICENSE)
 
 > A tool for quantitative risk analysis of Android applications based on machine
 > learning techniques.
-
-[![Codacy](https://app.codacy.com/project/badge/Grade/13be50b318c74ac88fba3e13bd620f9c)](https://www.codacy.com/gh/ClaudiuGeorgiu/RiskInDroid)
-[![Actions Status](https://github.com/ClaudiuGeorgiu/RiskInDroid/workflows/Build/badge.svg)](https://github.com/ClaudiuGeorgiu/RiskInDroid/actions?query=workflow%3ABuild)
-[![Python Version](https://img.shields.io/badge/Python-3.7%2B-green.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/LICENSE)
 
 
 
@@ -105,7 +100,7 @@ is to have a recent version of Docker installed:
 
 ```Shell
 $ docker --version             
-Docker version 20.10.7, build f0df350
+Docker version 20.10.20, build 9fdeb9c
 ```
 
 #### Official Docker Hub image
@@ -154,11 +149,9 @@ the uploaded applications in the current directory).
 
 #### Prerequisites
 
-To use RiskInDroid you need `Python 3` (at least `3.7`), `Java` (at least version `8`)
+To use RiskInDroid you need `Python 3` (at least `3.8`), `Java` (at least version `8`)
 and a tool to extract the content of `RiskInDroid/app/database/permission_db.7z`
-archive (e.g., `p7zip-full` can be used for this task in Ubuntu). Note: although
-possible, the installation of some of the Python libraries is not straightforward
-on Windows, the usage of a Linux distribution such as Ubuntu is advised.
+archive (e.g., `p7zip-full` can be used for this task in Ubuntu).
 
 #### Install
 
@@ -171,9 +164,8 @@ $ # Make sure to run the commands in RiskInDroid/ directory.
 $ # Extract permission_db.db from app/database/permission_db.7z archive and put 
 $ # it into app/database/ directory.
 
-$ # The usage of a virtual environment is highly recommended, e.g., virtualenv.
-$ # If not using virtualenv (https://virtualenv.pypa.io/), skip the next 2 lines.
-$ virtualenv -p python3 venv
+$ # The usage of a virtual environment is highly recommended.
+$ python3 -m venv venv
 $ source venv/bin/activate
 
 $ # Install RiskInDroid's requirements.
@@ -192,10 +184,11 @@ $ python3 app/app.py
 $ # Navigate to http://localhost:5000/ to use RiskInDroid.
 ```
 
-`NOTE:` the repository already contains the pre-trained models for the used
-classifiers, if you want to train the models again (e.g., to use a newer version of
-*scikit-learn*) just delete the contents of `app/models/` directory. The models will
-be recreated from the source data the next time an application is analyzed.
+> **Note**  
+> The repository already contains the pre-trained models for the used classifiers, if
+> you want to train the models again (e.g., to use a newer version of *scikit-learn*)
+> just delete the contents of `app/models/` directory. The models will be recreated
+> from the source data the next time an application is analyzed.
 
 
 

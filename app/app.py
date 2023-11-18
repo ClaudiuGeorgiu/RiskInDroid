@@ -23,7 +23,6 @@ ALLOWED_EXTENSIONS = {"apk", "zip"}
 
 
 def create_app():
-
     app = Flask(__name__)
 
     app.config["UPLOAD_DIR"] = os.path.join(
@@ -108,7 +107,6 @@ def upload_apk():
         raise BadRequest("No file uploaded")
 
     if file and check_if_valid_file_name(file.filename):
-
         filename = secure_filename(file.filename)
 
         file_path = os.path.join(
@@ -166,7 +164,6 @@ def upload_apk():
 
 @application.route("/apks", methods=["GET"], strict_slashes=False)
 def get_apks():
-
     query = Apk.query
 
     if request.args.get("sort") and request.args.get("sort_dir"):

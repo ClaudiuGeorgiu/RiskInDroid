@@ -33,9 +33,10 @@ classifiers, which then compute a risk value. The precision and the reliability 
 **RiskInDroid** have been empirically tested on a dataset made of more than 6K malware
 samples and 112K apps.
 
-`NOTE:` the data collection and the experiments took place in late 2016. Since then, the
-used libraries have been updated and the models have been retrained (by using the same
-dataset), so the current results might slightly differ from the original.
+> [!NOTE]  
+> The data collection and the experiments took place in late 2016. Since then, the used
+> libraries have been updated and the models have been retrained (by using the same
+> dataset), so the current results might slightly differ from the original.
 
 
 
@@ -99,8 +100,8 @@ This is the suggested way of installing RiskInDroid, since the only requirement
 is to have a recent version of Docker installed:
 
 ```Shell
-$ docker --version             
-Docker version 20.10.20, build 9fdeb9c
+$ docker --version
+Docker version 20.10.22, build 3a2c30b
 ```
 
 #### Official Docker Hub image
@@ -184,7 +185,7 @@ $ python3 app/app.py
 $ # Navigate to http://localhost:5000/ to use RiskInDroid.
 ```
 
-> **Note**  
+> [!TIP]  
 > The repository already contains the pre-trained models for the used classifiers, if
 > you want to train the models again (e.g., to use a newer version of *scikit-learn*)
 > just delete the contents of `app/models/` directory. The models will be recreated

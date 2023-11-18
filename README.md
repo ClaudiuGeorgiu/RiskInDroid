@@ -1,4 +1,4 @@
-# RiskInDroid &middot; [![Codacy](https://app.codacy.com/project/badge/Grade/13be50b318c74ac88fba3e13bd620f9c)](https://www.codacy.com/gh/ClaudiuGeorgiu/RiskInDroid) [![Actions Status](https://github.com/ClaudiuGeorgiu/RiskInDroid/workflows/Build/badge.svg)](https://github.com/ClaudiuGeorgiu/RiskInDroid/actions?query=workflow%3ABuild) [![Python Version](https://img.shields.io/badge/Python-3.8%2B-green.svg?logo=python&logoColor=white)](https://www.python.org/downloads/) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/LICENSE)
+# RiskInDroid &middot; [![Codacy](https://app.codacy.com/project/badge/Grade/13be50b318c74ac88fba3e13bd620f9c)](https://www.codacy.com/gh/ClaudiuGeorgiu/RiskInDroid) [![Actions Status](https://github.com/ClaudiuGeorgiu/RiskInDroid/workflows/Build/badge.svg)](https://github.com/ClaudiuGeorgiu/RiskInDroid/actions?query=workflow%3ABuild) [![Python Version](https://img.shields.io/badge/Python-3.9%2B-green.svg?logo=python&logoColor=white)](https://www.python.org/downloads/) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ClaudiuGeorgiu/RiskInDroid/blob/master/LICENSE)
 
 > A tool for quantitative risk analysis of Android applications based on machine
 > learning techniques.
@@ -150,7 +150,7 @@ the uploaded applications in the current directory).
 
 #### Prerequisites
 
-To use RiskInDroid you need `Python 3` (at least `3.8`), `Java` (at least version `8`)
+To use RiskInDroid you need `Python 3` (at least `3.9`), `Java` (at least version `8`)
 and a tool to extract the content of `RiskInDroid/app/database/permission_db.7z`
 archive (e.g., `p7zip-full` can be used for this task in Ubuntu).
 

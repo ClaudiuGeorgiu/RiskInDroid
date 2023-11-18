@@ -1,8 +1,8 @@
-FROM python:3.11-slim-bullseye
+FROM python:3.12-slim-bookworm
 
 # Install the needed tools.
 RUN apt update && apt install --no-install-recommends -y \
-    openjdk-11-jre-headless nginx supervisor p7zip-full gcc libc6-dev && \
+    openjdk-17-jre-headless nginx supervisor p7zip-full gcc libc6-dev && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
 # Setup Supervisor.

@@ -5,19 +5,13 @@ import os
 import subprocess
 import time
 
-from flask import Flask
-from flask import jsonify
-from flask import make_response
-from flask import render_template
-from flask import request
+from flask import Flask, jsonify, make_response, render_template, request
+from model import Apk, db
+from RiskInDroid import RiskInDroid
 from sqlalchemy import cast
 from sqlalchemy.sql import text
 from werkzeug.exceptions import BadRequest, UnprocessableEntity
 from werkzeug.utils import secure_filename
-
-from RiskInDroid import RiskInDroid
-from model import db, Apk
-
 
 ALLOWED_EXTENSIONS = {"apk", "zip"}
 

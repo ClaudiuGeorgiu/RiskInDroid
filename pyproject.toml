@@ -1,18 +1,9 @@
-[tool.black]
+[project]
+name = "RiskInDroid"
+requires-python = ">=3.9"
+
+[tool.ruff]
 line-length = 88
-include = '\.pyi?$'
-exclude = '''
-(
-    /(
-      | \.git
-      | \.github
-      | config
-      | docs
-      | venv
-      | app/database
-      | app/models
-      | app/static
-      | app/templates
-    )/
-)
-'''
+
+[tool.ruff.lint]
+extend-select = ["I"]

@@ -7,7 +7,7 @@ on:
 
 jobs:
   auto-format:
-    name: Format code with Black
+    name: Lint & format code with ruff
     runs-on: ubuntu-latest
 
     steps:
@@ -17,13 +17,14 @@ jobs:
         with:
           python-version: '3.12'
 
-      - run: pip install black
+      - run: pip install ruff
 
-      - name: Format code with Black and commit any changes
+      - name: Lint & format code with ruff and commit any changes
         run: |
-          black .
-          git config --global user.name 'Auto Black Formatter'
+          ruff check --output-format=github --fix .
+          ruff format .
+          git config --global user.name 'Auto ruff formatter'
           git config --global user.email 'claudiugeorgiu@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
           git checkout ${GITHUB_REF#refs/heads/}
-          git diff --quiet || git commit -am "Format code with Black [auto]" && git push
+          git diff --quiet || git commit -am "Format code with ruff [auto]" && git push

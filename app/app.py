@@ -197,7 +197,7 @@ def get_apk_details():
         try:
             # An exception will be thrown if the query string doesn't contain an md5.
             md5 = request.args["md5"]
-            apk = Apk.query.get(md5)
+            apk = db.session.get(Apk, md5)
             response = {
                 "name": apk.name,
                 "md5": apk.md5,

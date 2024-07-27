@@ -284,7 +284,7 @@ class RiskInDroid(object):
         """
 
         if json_result:
-            _vector = {}
+            _vector: dict = {}
 
             # Create a new "row" for each category of permissions, where the columns
             # will be the permissions' names contained in ANDROID_PERMISSIONS.
@@ -312,7 +312,7 @@ class RiskInDroid(object):
         :return: A feature vector composed by 0s and 1s.
         """
 
-        _vector = {}
+        _vector: dict = {}
 
         # Create a new "row" for each category of permissions, where the columns
         # will be the permissions' names contained in ANDROID_PERMISSIONS.

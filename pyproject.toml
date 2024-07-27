@@ -7,3 +7,10 @@ line-length = 88
 
 [tool.ruff.lint]
 extend-select = ["I"]
+
+[[tool.mypy.overrides]]
+module = [
+    "joblib",
+    "sklearn.*"
+]
+ignore_missing_imports = true

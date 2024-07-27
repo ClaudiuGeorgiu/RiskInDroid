@@ -5,7 +5,29 @@ on:
   pull_request:
 
 jobs:
+  typecheck:
+    name: Typecheck code with mypy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - name: Install Python packages
+        run: |
+          python -m pip install --upgrade pip mypy
+          python -m pip install -r ./requirements.test.txt
+
+      - name: Typecheck code with mypy
+        run: mypy .
+
   test:
+    needs: typecheck
     name: Test on Python ${{ matrix.python-version }} and ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:

@@ -42,7 +42,7 @@ not_required_but_used_permissions = db.Table(
 )
 
 
-class Apk(db.Model):
+class Apk(db.Model):  # type: ignore[name-defined]
     __tablename__ = "apks"
 
     md5 = db.Column(db.String(32), primary_key=True)
@@ -81,7 +81,7 @@ class Apk(db.Model):
         )
 
 
-class Permission(db.Model):
+class Permission(db.Model):  # type: ignore[name-defined]
     __tablename__ = "permissions"
 
     id = db.Column(db.Integer, primary_key=True)

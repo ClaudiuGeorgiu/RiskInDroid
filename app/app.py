@@ -66,9 +66,9 @@ def check_if_valid_file_name(file_name):
 
 @application.after_request
 def add_cache_header(response):
-    response.headers[
-        "Cache-Control"
-    ] = "public, max-age=0, no-cache, no-store, must-revalidate"
+    response.headers["Cache-Control"] = (
+        "public, max-age=0, no-cache, no-store, must-revalidate"
+    )
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
     return response

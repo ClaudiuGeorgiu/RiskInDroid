@@ -1,6 +1,19 @@
 version: 2
 
 updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      python-packages:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "numpy"
+      - dependency-name: "scikit-learn"
+      - dependency-name: "scipy"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

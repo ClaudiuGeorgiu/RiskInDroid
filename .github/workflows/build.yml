@@ -102,6 +102,7 @@ jobs:
             type=semver,pattern={{version}}
 
       - name: Build and push
+        id: push
         uses: docker/build-push-action@v5
         with:
           context: .

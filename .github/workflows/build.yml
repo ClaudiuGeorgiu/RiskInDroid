@@ -112,7 +112,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
 
       - name: Generate Docker image attestation
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-name: index.docker.io/claudiugeorgiu/riskindroid
           subject-digest: ${{ steps.push.outputs.digest }}

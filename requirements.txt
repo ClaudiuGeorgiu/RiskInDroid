@@ -5,5 +5,5 @@ numpy==1.26.2
 pytest==8.4.2
 scikit-learn==1.3.2
 scipy==1.11.3
-tqdm==4.67.2
-types-tqdm==4.67.0.20250809
+tqdm==4.67.3
+types-tqdm==4.67.3.20260205

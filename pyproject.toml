@@ -1,6 +1,6 @@
 [project]
 name = "RiskInDroid"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 [tool.ruff]
 line-length = 88
